@@ -1,0 +1,112 @@
+
+######## 01-infra ########
+
+==> Pacotes de base
+debconf: delaying package configuration, since apt-utils is not installed
+    ok curl, git, jq, ufw, auditd, stress, sysstat, sqlite3, rsync
+
+==> Hostname
+    ok já era aquenda-srv
+
+==> IP fixo (192.168.56.10/24 em enp0s8)
+    aviso container: a rede é do Docker, IP fixo fica para a VM
+
+==> /etc/hosts
+    ok aquenda-srv, api.aquenda.local e jobs.aquenda.local apontam para 192.168.56.10
+
+==> DNS (1.1.1.1 8.8.8.8)
+    aviso sem systemd-resolved; resolv.conf atual: nameserver 192.168.65.7
+    ok resolve github.com
+
+==> Fuso e hora
+    ok -03 -0300
+
+==> Firewall (ufw)
+    ok ativo, entrada liberada só em: 22 5000 8000
+
+==> Usuário de serviço e pastas
+    ok usuário aquenda criado (sem login)
+    ok /opt/aquenda, /var/lib/aquenda, /etc/aquenda (750) e /var/log/aquenda
+
+==> Fim da infra
+    ok infra pronta: aquenda-srv · lo=127.0.0.1/8 eth0@if40=172.17.0.2/16 
+
+######## 02-app ########
+
+==> Pacotes da aplicação (.NET 8, Python 3, PostgreSQL)
+debconf: delaying package configuration, since apt-utils is not installed
+    ok 8.0.133 · Python 3.12.3 · psql 16.15
+
+==> PostgreSQL
+Synchronizing state of postgresql.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable postgresql
+    ok banco aquenda_soa com dono aquenda (só aceita conexão local)
+
+==> Código-fonte
+    ok api@5bb800e (rinku/loving-planck-r47bz4)
+    ok jobs@194ca51 (rinku/affectionate-darwin-9ejh4z)
+
+==> Arquivos .env (segredos fora do repositório)
+    aviso sem ADZUNA_APP_ID: a FastAPI sobe com o cache e marca a Adzuna como não configurada
+    ok /etc/aquenda/api.env e /etc/aquenda/jobs.env (root:aquenda, 640)
+
+==> Publicar a API C# (.NET 8)
+    ok publicada em /opt/aquenda/api (34M)
+
+==> FastAPI: código, venv e dependências
+    ok venv em /opt/aquenda/jobs/.venv com o driver do PostgreSQL (psycopg)
+
+==> Migrar o banco da FastAPI (alembic upgrade head)
+INFO  [alembic.runtime.migration] Running upgrade 0001 -> 0002, Dados curados pelo grupo: vagas fixas, lista de habilitação 30.02 e um ponto de partida offline.
+INFO  [alembic.runtime.migration] Running upgrade 0002 -> 0003, Habilitações do processo transexualizador conferidas na Portaria GM/MS nº 2.803/2013.
+INFO  [alembic.runtime.migration] Running upgrade 0003 -> 0004, Habilitações do processo transexualizador em SP a partir do arquivo oficial do CNES.
+    ok versão do schema: 0004
+
+==> Serviços systemd
+    ok aquenda-api e aquenda-jobs ligados (Restart=always, sobem no boot)
+
+==> A API C# migra o SQLite na subida; esperando as duas responderem
+    ok API C#: Healthy
+    ok FastAPI: {"status":"ok","banco":"ok"}
+    ok migrações da API C#: 2 aplicadas
+
+==> Funcionamento completo
+    ok curl localhost:5000/api/servicos -> 10 serviços no catálogo
+    ok curl localhost:8000/docs -> HTTP 200 (Swagger da FastAPI)
+
+######## 03-monitor ########
+
+==> Scripts e configuração em /opt/aquenda
+    ok /opt/aquenda/scripts e /opt/aquenda/config
+
+==> Serviço do monitor e timers
+    ok aquenda-monitor ativo (Restart=always), aquenda-saude.timer a cada minuto, sync da FastAPI de hora em hora
+
+==> Rotação de logs
+    ok logs de /var/log/aquenda giram todo dia e ficam 14 dias
+
+==> auditd vigiando /opt/aquenda e /etc/aquenda
+    aviso container: o auditd precisa do kernel da VM; regras copiadas para /etc/audit/rules.d/aquenda.rules
+
+==> Primeira medição
+    ok cpu=0% memoria=39% disco=3% carga=1.85,2.16,1.25
+
+Aquenda no ar em 1 min 37 s
+UNIT                    LOAD   ACTIVE SUB     DESCRIPTION
+aquenda-api.service     loaded active running Aquenda API C# (.NET 8, porta 5000)
+aquenda-jobs.service    loaded active running Aquenda Jobs FastAPI (porta 8000)
+aquenda-monitor.service loaded active running Aquenda monitor de CPU, memória e disco
+postgresql.service      loaded active exited  PostgreSQL RDBMS
+aquenda-jobs-sync.timer loaded active waiting Aquenda Jobs sincronização de hora em hora
+aquenda-saude.timer     loaded active waiting Aquenda verificação de saúde a cada minuto
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+
+  API C#:   curl http://localhost:5000/api/servicos
+  FastAPI:  curl http://localhost:8000/docs
+  monitor:  tail -f /var/log/aquenda/monitor.log
+  auditoria: tail /var/log/aquenda/audit.log
+  falhas:   sudo ./scripts/04-teste-falha.sh

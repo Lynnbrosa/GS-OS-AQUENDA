@@ -1,0 +1,69 @@
+$ systemctl list-units "aquenda-*" postgresql.service
+  UNIT                    LOAD   ACTIVE SUB     DESCRIPTION
+  aquenda-api.service     loaded active running Aquenda API C# (.NET 8, porta 5000)
+  aquenda-jobs.service    loaded active running Aquenda Jobs FastAPI (porta 8000)
+  aquenda-monitor.service loaded active running Aquenda monitor de CPU, memória e disco
+  postgresql.service      loaded active exited  PostgreSQL RDBMS
+  aquenda-jobs-sync.timer loaded active waiting Aquenda Jobs sincronização de hora em hora
+  aquenda-saude.timer     loaded active waiting Aquenda verificação de saúde a cada minuto
+
+
+$ systemctl list-timers "aquenda-*"
+NEXT                         LEFT LAST                             PASSED UNIT                    ACTIVATES
+Fri 2026-11-06 15:47:15 -03   55s Fri 2026-11-06 15:46:14 -03      4s ago aquenda-saude.timer     aquenda-saude.service
+Fri 2026-11-06 16:45:11 -03 58min Fri 2026-11-06 15:45:11 -03 1min 7s ago aquenda-jobs-sync.timer aquenda-jobs-sync.service
+
+
+$ systemctl show aquenda-api -p Restart -p RestartUSec -p NRestarts -p User
+Restart=always
+RestartUSec=5s
+NRestarts=1
+User=aquenda
+
+# tolerância a falha do próprio monitor
+$ kill -9 5004   # pid do aquenda-monitor
+pid agora: 5665, estado: active, reinícios: 1
+
+$ ufw status verbose
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere                  
+5000/tcp                   ALLOW IN    Anywhere                  
+8000/tcp                   ALLOW IN    Anywhere                  
+22/tcp (v6)                ALLOW IN    Anywhere (v6)             
+5000/tcp (v6)              ALLOW IN    Anywhere (v6)             
+8000/tcp (v6)              ALLOW IN    Anywhere (v6)             
+
+
+$ ls -l /etc/aquenda
+total 8
+-rw-r----- 1 root aquenda 386 Nov  6 15:43 api.env
+-rw-r----- 1 root aquenda 344 Nov  6 15:43 jobs.env
+
+$ sed -n "/>>> aquenda/,/<<< aquenda/p" /etc/hosts
+# >>> aquenda
+192.168.56.10 aquenda-srv aquenda-srv.aquenda.local api.aquenda.local jobs.aquenda.local
+127.0.1.1 aquenda-srv
+# <<< aquenda
+
+$ journalctl -t aquenda-monitor
+Nov 06 15:44:13 aquenda-srv aquenda-monitor[5035]: INICIO monitor ligado pid=5004 limites cpu=80% memoria=85% disco=90%
+Nov 06 15:44:29 aquenda-srv aquenda-monitor[5316]: ALERTA recurso=cpu uso=99% limite=80%
+Nov 06 15:44:45 aquenda-srv aquenda-monitor[5334]: ALERTA recurso=cpu uso=100% limite=80%
+Nov 06 15:45:00 aquenda-srv aquenda-monitor[5353]: ALERTA recurso=cpu uso=99% limite=80%
+Nov 06 15:45:15 aquenda-srv aquenda-monitor[5391]: ALERTA recurso=cpu uso=100% limite=80%
+Nov 06 15:45:30 aquenda-srv aquenda-monitor[5414]: NORMALIZADO recurso=cpu uso=6% limite=80%
+Nov 06 15:46:15 aquenda-srv aquenda-monitor[5569]: ALERTA servico=postgresql estado=parado acao=religado
+Nov 06 15:46:24 aquenda-srv aquenda-monitor[5679]: INICIO monitor ligado pid=5665 limites cpu=80% memoria=85% disco=90%
+
+$ curl -s localhost:5000/api/servicos | jq ".total, .itens[0].nome"
+10
+"Casa 1"
+
+$ curl -s -o /dev/null -w "%{http_code}" localhost:8000/docs
+200

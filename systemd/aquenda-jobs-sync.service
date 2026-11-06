@@ -1,0 +1,12 @@
+# Sincroniza as fontes da FastAPI (Adzuna, Gupy, IBGE, CNES). Disparado pelo aquenda-jobs-sync.timer.
+# Sai com código 1 se alguma fonte falhou; o journal e o audit.log registram.
+[Unit]
+Description=Aquenda Jobs sincronizar fontes externas
+After=network-online.target postgresql.service
+
+[Service]
+Type=oneshot
+User=aquenda
+WorkingDirectory=/opt/aquenda/jobs
+EnvironmentFile=/etc/aquenda/jobs.env
+ExecStart=/opt/aquenda/jobs/.venv/bin/python -m app.cli sincronizar

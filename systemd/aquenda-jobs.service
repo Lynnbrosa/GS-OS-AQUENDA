@@ -1,0 +1,26 @@
+# FastAPI do Aquenda: vagas de emprego afirmativas, CNES e IBGE. Banco no PostgreSQL local.
+# Instalado por scripts/02-app.sh em /etc/systemd/system/.
+[Unit]
+Description=Aquenda Jobs FastAPI (porta 8000)
+After=network-online.target postgresql.service
+Wants=network-online.target postgresql.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=aquenda
+Group=aquenda
+WorkingDirectory=/opt/aquenda/jobs
+EnvironmentFile=/etc/aquenda/jobs.env
+ExecStart=/opt/aquenda/jobs/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/aquenda /var/log/aquenda
+
+[Install]
+WantedBy=multi-user.target

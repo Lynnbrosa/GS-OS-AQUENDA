@@ -1,0 +1,10 @@
+2026-11-06T15:44:13-03:00 nivel=INICIO monitor ligado pid=5004 limites cpu=80% memoria=85% disco=90%
+2026-11-06T15:44:14-03:00 nivel=OK cpu=7% memoria=39% disco=3% carga=2.01,2.19,1.25
+2026-11-06T15:44:29-03:00 nivel=ALERTA recurso=cpu uso=99% limite=80%
+2026-11-06T15:44:45-03:00 nivel=ALERTA recurso=cpu uso=100% limite=80%
+2026-11-06T15:45:00-03:00 nivel=ALERTA recurso=cpu uso=99% limite=80%
+2026-11-06T15:45:15-03:00 nivel=ALERTA recurso=cpu uso=100% limite=80%
+2026-11-06T15:45:15-03:00 nivel=OK cpu=100% memoria=39% disco=3% carga=7.91,3.76,1.85
+2026-11-06T15:45:30-03:00 nivel=NORMALIZADO recurso=cpu uso=6% limite=80%
+2026-11-06T15:46:15-03:00 nivel=ALERTA servico=postgresql estado=parado acao=religado
+2026-11-06T15:46:15-03:00 nivel=OK cpu=1% memoria=38% disco=3% carga=3.80,3.45,1.87

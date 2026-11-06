@@ -1,0 +1,8 @@
+# Verificação de saúde disparada pelo aquenda-saude.timer (a cada minuto).
+# Confere se o monitor e as duas APIs estão de pé e respondendo; o que estiver caído é religado e vira alerta.
+[Unit]
+Description=Aquenda verificação de saúde dos serviços
+
+[Service]
+Type=oneshot
+ExecStart=/opt/aquenda/scripts/03-monitor.sh --saude

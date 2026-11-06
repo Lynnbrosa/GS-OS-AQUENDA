@@ -1,0 +1,24 @@
+
+==> Teste 1: kill -9 na API C#, o systemd sobe de novo
+2026-11-06T15:44:18-03:00 teste=kill servico=aquenda-api pid_antes=4865
+2026-11-06T15:44:25-03:00 teste=kill pid_depois=5210 processo_novo_em=5.1s respondendo_em=7.2s reinicios=1
+    ok pid 4865 morto; systemd subiu o pid 5210 em 5.1 s (RestartSec=5) e a API respondeu em 7.2 s
+
+==> Teste 2: stress --cpu 4 --timeout 60, o monitor alerta
+2026-11-06T15:44:25-03:00 teste=cpu comando="stress --cpu 4 --timeout 60" limite=80%
+2026-11-06T15:45:42-03:00 teste=cpu primeiro_alerta_em=5s
+2026-11-06T15:44:29-03:00 nivel=ALERTA recurso=cpu uso=99% limite=80%
+2026-11-06T15:45:30-03:00 nivel=NORMALIZADO recurso=cpu uso=6% limite=80%
+    ok alerta de CPU em 5 s; quando o stress acaba, o monitor registra NORMALIZADO
+
+==> Teste 3: PostgreSQL parado, a FastAPI responde um erro claro
+2026-11-06T15:45:42-03:00 teste=banco acao="systemctl stop postgresql"
+2026-11-06T15:45:44-03:00 teste=banco health_http=503 corpo={"type":"about:blank","title":"Banco indisponível","status":503,"detail":null,"instance":"/health"}
+    ok GET /health -> HTTP 503: {"type":"about:blank","title":"Banco indisponível","status":503,"detail":null,"instance":"/health"}
+    ok a API C# (SQLite) segue no ar: HTTP 200
+    esperando o aquenda-saude.timer religar o PostgreSQL (até 75 s)...
+2026-11-06T15:46:18-03:00 teste=banco religado_em=34s health_http=200
+    ok PostgreSQL de volta em 34 s pelo timer de saúde; /health voltou a 200
+
+==> Fim dos testes de falha
+    ok relatório em /var/log/aquenda/teste-falha.log

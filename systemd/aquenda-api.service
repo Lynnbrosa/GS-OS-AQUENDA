@@ -1,0 +1,28 @@
+# API C# do Aquenda (.NET 8): catálogo, salas de conversa, rodas e vagas das casas.
+# Instalado por scripts/02-app.sh em /etc/systemd/system/.
+[Unit]
+Description=Aquenda API C# (.NET 8, porta 5000)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=aquenda
+Group=aquenda
+WorkingDirectory=/opt/aquenda/api
+EnvironmentFile=/etc/aquenda/api.env
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
+ExecStart=/usr/bin/dotnet /opt/aquenda/api/Aquenda.Api.dll
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+# endurecimento: só escreve no banco e no log
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/aquenda /var/log/aquenda
+
+[Install]
+WantedBy=multi-user.target

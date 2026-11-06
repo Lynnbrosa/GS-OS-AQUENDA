@@ -1,0 +1,16 @@
+# Monitor de recursos do Aquenda: CPU, memória e disco a cada 15 s, com alerta em /var/log/aquenda/monitor.log.
+# Tolerante a falha: se o processo morrer (kill, erro), o systemd sobe de novo em 5 s, sem limite de tentativas.
+[Unit]
+Description=Aquenda monitor de CPU, memória e disco
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/opt/aquenda/scripts/03-monitor.sh --servico
+Restart=always
+RestartSec=5
+Nice=5
+
+[Install]
+WantedBy=multi-user.target

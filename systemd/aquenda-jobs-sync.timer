@@ -1,0 +1,11 @@
+# De hora em hora. Fonte com cache válido não é chamada de novo.
+[Unit]
+Description=Aquenda Jobs sincronização de hora em hora
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

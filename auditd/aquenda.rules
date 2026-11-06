@@ -1,0 +1,13 @@
+# Regras do auditd para o Aquenda (instaladas por scripts/03-monitor.sh em /etc/audit/rules.d/).
+# Consultar:  ausearch -k aquenda_app -i     ausearch -k aquenda_segredos -i
+
+# código e binários publicados: quem escreveu ou mudou permissão
+-w /opt/aquenda -p wa -k aquenda_app
+# segredos (.env): até leitura fica registrada
+-w /etc/aquenda -p rwa -k aquenda_segredos
+# unidades systemd do Aquenda
+-w /etc/systemd/system/aquenda-api.service -p wa -k aquenda_servicos
+-w /etc/systemd/system/aquenda-jobs.service -p wa -k aquenda_servicos
+-w /etc/systemd/system/aquenda-monitor.service -p wa -k aquenda_servicos
+# banco da API C#
+-w /var/lib/aquenda -p wa -k aquenda_dados
