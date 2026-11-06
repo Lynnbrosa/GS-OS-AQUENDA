@@ -1,0 +1,98 @@
+2026-11-06T18:59:43+00:00 usuario=lynn script=01-infra.sh passo="Pacotes de base" resultado=inicio 
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="Pacotes de base" resultado=ok curl, git, jq, ufw, auditd, stress, sysstat, sqlite3, rsync
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="Hostname" resultado=inicio 
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="Hostname" resultado=ok hostname agora é aquenda-srv
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="IP fixo (192.168.56.10/24 em enp0s8)" resultado=inicio 
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="IP fixo (192.168.56.10/24 em enp0s8)" resultado=ok enp0s8           UP             192.168.56.10/24 
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="/etc/hosts" resultado=inicio 
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="/etc/hosts" resultado=ok aquenda-srv, api.aquenda.local e jobs.aquenda.local apontam para 192.168.56.10
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="DNS (1.1.1.1 8.8.8.8)" resultado=inicio 
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="DNS (1.1.1.1 8.8.8.8)" resultado=ok systemd-resolved com 1.1.1.1 8.8.8.8
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="DNS (1.1.1.1 8.8.8.8)" resultado=ok resolve github.com
+2026-11-06T19:01:55+00:00 usuario=lynn script=01-infra.sh passo="Fuso e hora" resultado=inicio 
+2026-11-06T16:01:56-03:00 usuario=lynn script=01-infra.sh passo="Fuso e hora" resultado=ok -03 -0300
+2026-11-06T16:01:56-03:00 usuario=lynn script=01-infra.sh passo="Firewall (ufw)" resultado=inicio 
+2026-11-06T16:01:57-03:00 usuario=lynn script=01-infra.sh passo="Firewall (ufw)" resultado=ok ativo, entrada liberada só em: 22 5000 8000
+2026-11-06T16:01:57-03:00 usuario=lynn script=01-infra.sh passo="Usuário de serviço e pastas" resultado=inicio 
+2026-11-06T16:01:57-03:00 usuario=lynn script=01-infra.sh passo="Usuário de serviço e pastas" resultado=ok usuário aquenda criado (sem login)
+2026-11-06T16:01:57-03:00 usuario=lynn script=01-infra.sh passo="Usuário de serviço e pastas" resultado=ok /opt/aquenda, /var/lib/aquenda, /etc/aquenda (750) e /var/log/aquenda
+2026-11-06T16:01:57-03:00 usuario=lynn script=01-infra.sh passo="Fim da infra" resultado=inicio 
+2026-11-06T16:01:57-03:00 usuario=lynn script=01-infra.sh passo="Fim da infra" resultado=ok infra pronta: aquenda-srv · lo=127.0.0.1/8 enp0s3=10.0.2.15/24 enp0s8=192.168.56.10/24 
+2026-11-06T16:01:57-03:00 usuario=lynn script=02-app.sh passo="Pacotes da aplicação (.NET 8, Python 3, PostgreSQL)" resultado=inicio 
+2026-11-06T16:02:46-03:00 usuario=lynn script=02-app.sh passo="Pacotes da aplicação (.NET 8, Python 3, PostgreSQL)" resultado=ok 8.0.133 · Python 3.12.3 · psql 16.15
+2026-11-06T16:02:46-03:00 usuario=lynn script=02-app.sh passo="PostgreSQL" resultado=inicio 
+2026-11-06T16:02:47-03:00 usuario=lynn script=02-app.sh passo="PostgreSQL" resultado=ok banco aquenda_soa com dono aquenda (só aceita conexão local)
+2026-11-06T16:02:47-03:00 usuario=lynn script=02-app.sh passo="Código-fonte" resultado=inicio 
+2026-11-06T16:02:48-03:00 usuario=lynn script=02-app.sh passo="Código-fonte" resultado=ok api@5bb800e (rinku/loving-planck-r47bz4)
+2026-11-06T16:02:49-03:00 usuario=lynn script=02-app.sh passo="Código-fonte" resultado=ok jobs@194ca51 (rinku/affectionate-darwin-9ejh4z)
+2026-11-06T16:02:49-03:00 usuario=lynn script=02-app.sh passo="Arquivos .env (segredos fora do repositório)" resultado=inicio 
+2026-11-06T16:02:49-03:00 usuario=lynn script=02-app.sh passo="Arquivos .env (segredos fora do repositório)" resultado=aviso sem ADZUNA_APP_ID: a FastAPI sobe com o cache e marca a Adzuna como não configurada
+2026-11-06T16:02:49-03:00 usuario=lynn script=02-app.sh passo="Arquivos .env (segredos fora do repositório)" resultado=ok /etc/aquenda/api.env e /etc/aquenda/jobs.env (root:aquenda, 640)
+2026-11-06T16:02:49-03:00 usuario=lynn script=02-app.sh passo="Publicar a API C# (.NET 8)" resultado=inicio 
+2026-11-06T16:03:19-03:00 usuario=lynn script=02-app.sh passo="Publicar a API C# (.NET 8)" resultado=ok publicada em /opt/aquenda/api (34M)
+2026-11-06T16:03:19-03:00 usuario=lynn script=02-app.sh passo="FastAPI: código, venv e dependências" resultado=inicio 
+2026-11-06T16:03:34-03:00 usuario=lynn script=02-app.sh passo="FastAPI: código, venv e dependências" resultado=ok venv em /opt/aquenda/jobs/.venv com o driver do PostgreSQL (psycopg)
+2026-11-06T16:03:34-03:00 usuario=lynn script=02-app.sh passo="Migrar o banco da FastAPI (alembic upgrade head)" resultado=inicio 
+2026-11-06T16:03:35-03:00 usuario=lynn script=02-app.sh passo="Migrar o banco da FastAPI (alembic upgrade head)" resultado=ok versão do schema: 0004
+2026-11-06T16:03:35-03:00 usuario=lynn script=02-app.sh passo="Serviços systemd" resultado=inicio 
+2026-11-06T16:03:35-03:00 usuario=lynn script=02-app.sh passo="Serviços systemd" resultado=ok aquenda-api e aquenda-jobs ligados (Restart=always, sobem no boot)
+2026-11-06T16:03:35-03:00 usuario=lynn script=02-app.sh passo="A API C# migra o SQLite na subida; esperando as duas responderem" resultado=inicio 
+2026-11-06T16:03:40-03:00 usuario=lynn script=02-app.sh passo="A API C# migra o SQLite na subida; esperando as duas responderem" resultado=ok API C#: Healthy
+2026-11-06T16:03:40-03:00 usuario=lynn script=02-app.sh passo="A API C# migra o SQLite na subida; esperando as duas responderem" resultado=ok FastAPI: {"status":"ok","banco":"ok"}
+2026-11-06T16:03:40-03:00 usuario=lynn script=02-app.sh passo="A API C# migra o SQLite na subida; esperando as duas responderem" resultado=ok migrações da API C#: 2 aplicadas
+2026-11-06T16:03:40-03:00 usuario=lynn script=02-app.sh passo="Funcionamento completo" resultado=inicio 
+2026-11-06T16:03:40-03:00 usuario=lynn script=02-app.sh passo="Funcionamento completo" resultado=ok curl localhost:5000/api/servicos -> 10 serviços no catálogo
+2026-11-06T16:03:40-03:00 usuario=lynn script=02-app.sh passo="Funcionamento completo" resultado=ok curl localhost:8000/docs -> HTTP 200 (Swagger da FastAPI)
+2026-11-06T16:03:40-03:00 usuario=lynn script=03-monitor.sh passo="Scripts e configuração em /opt/aquenda" resultado=inicio 
+2026-11-06T16:03:40-03:00 usuario=lynn script=03-monitor.sh passo="Scripts e configuração em /opt/aquenda" resultado=ok /opt/aquenda/scripts e /opt/aquenda/config
+2026-11-06T16:03:40-03:00 usuario=lynn script=03-monitor.sh passo="Serviço do monitor e timers" resultado=inicio 
+2026-11-06T16:03:41-03:00 usuario=root script=03-monitor.sh passo="monitor" resultado=inicio monitor ligado (intervalo 15s, limites cpu=80% mem=85% disco=90%)
+2026-11-06T16:03:44-03:00 usuario=lynn script=03-monitor.sh passo="Serviço do monitor e timers" resultado=ok aquenda-monitor ativo (Restart=always), aquenda-saude.timer a cada minuto, sync da FastAPI de hora em hora
+2026-11-06T16:03:44-03:00 usuario=lynn script=03-monitor.sh passo="Rotação de logs" resultado=inicio 
+2026-11-06T16:03:44-03:00 usuario=lynn script=03-monitor.sh passo="Rotação de logs" resultado=ok logs de /var/log/aquenda giram todo dia e ficam 14 dias
+2026-11-06T16:03:44-03:00 usuario=lynn script=03-monitor.sh passo="auditd vigiando /opt/aquenda e /etc/aquenda" resultado=inicio 
+2026-11-06T16:03:46-03:00 usuario=lynn script=03-monitor.sh passo="auditd vigiando /opt/aquenda e /etc/aquenda" resultado=ok 6 regras ativas (ausearch -k aquenda_app para consultar)
+2026-11-06T16:03:46-03:00 usuario=lynn script=03-monitor.sh passo="Primeira medição" resultado=inicio 
+2026-11-06T16:03:47-03:00 usuario=lynn script=03-monitor.sh passo="Primeira medição" resultado=ok cpu=0% memoria=32% disco=39% carga=1.84,1.15,0.59
+2026-11-06T16:04:25-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 1: kill -9 na API C#, o systemd sobe de novo" resultado=inicio 
+2026-11-06T16:04:32-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 1: kill -9 na API C#, o systemd sobe de novo" resultado=ok pid 10340 morto; systemd subiu o pid 11077 em 5.1 s (RestartSec=5) e a API respondeu em 7.3 s
+2026-11-06T16:04:32-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 2: stress --cpu 4 --timeout 60, o monitor alerta" resultado=inicio 
+2026-11-06T16:05:51-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 2: stress --cpu 4 --timeout 60, o monitor alerta" resultado=ok alerta de CPU em 62 s; quando o stress acaba, o monitor registra NORMALIZADO
+2026-11-06T16:05:51-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 3: PostgreSQL parado, a FastAPI responde um erro claro" resultado=inicio 
+2026-11-06T16:05:53-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 3: PostgreSQL parado, a FastAPI responde um erro claro" resultado=ok GET /health -> HTTP 503: {"type":"about:blank","title":"Banco indisponível","status":503,"detail":null,"instance":"/health"}
+2026-11-06T16:05:53-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 3: PostgreSQL parado, a FastAPI responde um erro claro" resultado=ok a API C# (SQLite) segue no ar: HTTP 200
+2026-11-06T16:06:02-03:00 usuario=root script=03-monitor.sh passo="saude" resultado=religado postgresql estava parado
+2026-11-06T16:06:05-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 3: PostgreSQL parado, a FastAPI responde um erro claro" resultado=ok PostgreSQL de volta em 12 s pelo timer de saúde; /health voltou a 200
+2026-11-06T16:06:05-03:00 usuario=lynn script=04-teste-falha.sh passo="Fim dos testes de falha" resultado=inicio 
+2026-11-06T16:06:05-03:00 usuario=lynn script=04-teste-falha.sh passo="Fim dos testes de falha" resultado=ok relatório em /var/log/aquenda/teste-falha.log
+2026-11-06T16:06:27-03:00 usuario=lynn script=03-monitor.sh passo="Scripts e configuração em /opt/aquenda" resultado=inicio 
+2026-11-06T16:06:27-03:00 usuario=lynn script=03-monitor.sh passo="Scripts e configuração em /opt/aquenda" resultado=ok /opt/aquenda/scripts e /opt/aquenda/config
+2026-11-06T16:06:27-03:00 usuario=lynn script=03-monitor.sh passo="Serviço do monitor e timers" resultado=inicio 
+2026-11-06T16:06:28-03:00 usuario=root script=03-monitor.sh passo="monitor" resultado=fim monitor parado (sinal)
+2026-11-06T16:06:28-03:00 usuario=root script=03-monitor.sh passo="monitor" resultado=inicio monitor ligado (intervalo 15s, limites cpu=80% mem=85% disco=90%)
+2026-11-06T16:06:31-03:00 usuario=lynn script=03-monitor.sh passo="Serviço do monitor e timers" resultado=ok aquenda-monitor ativo (Restart=always), aquenda-saude.timer a cada minuto, sync da FastAPI de hora em hora
+2026-11-06T16:06:31-03:00 usuario=lynn script=03-monitor.sh passo="Rotação de logs" resultado=inicio 
+2026-11-06T16:06:31-03:00 usuario=lynn script=03-monitor.sh passo="Rotação de logs" resultado=ok logs de /var/log/aquenda giram todo dia e ficam 14 dias
+2026-11-06T16:06:31-03:00 usuario=lynn script=03-monitor.sh passo="auditd vigiando /opt/aquenda e /etc/aquenda" resultado=inicio 
+2026-11-06T16:06:32-03:00 usuario=lynn script=03-monitor.sh passo="auditd vigiando /opt/aquenda e /etc/aquenda" resultado=ok 6 regras ativas (ausearch -k aquenda_app para consultar)
+2026-11-06T16:06:32-03:00 usuario=lynn script=03-monitor.sh passo="Primeira medição" resultado=inicio 
+2026-11-06T16:06:33-03:00 usuario=lynn script=03-monitor.sh passo="Primeira medição" resultado=ok cpu=5% memoria=25% disco=39% carga=6.01,3.85,1.72
+2026-11-06T16:06:33-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 2: stress --cpu 4 --timeout 60, o monitor alerta" resultado=inicio 
+2026-11-06T16:09:43-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 2: stress --cpu 4 --timeout 60, o monitor alerta" resultado=aviso nenhum alerta de CPU em 70 s
+2026-11-06T16:09:43-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 2: stress --cpu 4 --timeout 60, o monitor alerta" resultado=erro linha=86 codigo=1 comando="return 1"
+2026-11-06T16:14:48-03:00 usuario=lynn script=03-monitor.sh passo="Scripts e configuração em /opt/aquenda" resultado=inicio 
+2026-11-06T16:14:48-03:00 usuario=lynn script=03-monitor.sh passo="Scripts e configuração em /opt/aquenda" resultado=ok /opt/aquenda/scripts e /opt/aquenda/config
+2026-11-06T16:14:48-03:00 usuario=lynn script=03-monitor.sh passo="Serviço do monitor e timers" resultado=inicio 
+2026-11-06T16:14:49-03:00 usuario=root script=03-monitor.sh passo="monitor" resultado=fim monitor parado (sinal)
+2026-11-06T16:14:49-03:00 usuario=root script=03-monitor.sh passo="monitor" resultado=inicio monitor ligado (intervalo 15s, limites cpu=80% mem=85% disco=90%)
+2026-11-06T16:14:53-03:00 usuario=lynn script=03-monitor.sh passo="Serviço do monitor e timers" resultado=ok aquenda-monitor ativo (Restart=always), aquenda-saude.timer a cada minuto, sync da FastAPI de hora em hora
+2026-11-06T16:14:53-03:00 usuario=lynn script=03-monitor.sh passo="Rotação de logs" resultado=inicio 
+2026-11-06T16:14:53-03:00 usuario=lynn script=03-monitor.sh passo="Rotação de logs" resultado=ok logs de /var/log/aquenda giram todo dia e ficam 14 dias
+2026-11-06T16:14:53-03:00 usuario=lynn script=03-monitor.sh passo="auditd vigiando /opt/aquenda e /etc/aquenda" resultado=inicio 
+2026-11-06T16:14:54-03:00 usuario=lynn script=03-monitor.sh passo="auditd vigiando /opt/aquenda e /etc/aquenda" resultado=ok 6 regras ativas (ausearch -k aquenda_app para consultar)
+2026-11-06T16:14:54-03:00 usuario=lynn script=03-monitor.sh passo="Primeira medição" resultado=inicio 
+2026-11-06T16:14:55-03:00 usuario=lynn script=03-monitor.sh passo="Primeira medição" resultado=ok cpu=6% memoria=19% disco=39% carga=2.56,4.12,3.24
+2026-11-06T16:14:55-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 2: stress em todas as CPUs por 90 s, o monitor alerta" resultado=inicio 
+2026-11-06T16:16:42-03:00 usuario=lynn script=04-teste-falha.sh passo="Teste 2: stress em todas as CPUs por 90 s, o monitor alerta" resultado=ok alerta de CPU em 33 s; quando o stress acaba, o monitor registra NORMALIZADO
+2026-11-06T16:16:42-03:00 usuario=lynn script=04-teste-falha.sh passo="Fim dos testes de falha" resultado=inicio 
+2026-11-06T16:16:42-03:00 usuario=lynn script=04-teste-falha.sh passo="Fim dos testes de falha" resultado=ok relatório em /var/log/aquenda/teste-falha.log

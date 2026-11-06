@@ -1,0 +1,15 @@
+# Do Windows (host), pela rede host-only, até o IP fixo da VM
+
+$ curl -s http://192.168.56.10:5000/api/servicos | jq ".total, .itens[0].nome"
+10
+Casa 1
+
+$ curl -s -o /dev/null -w "%{http_code}" http://192.168.56.10:8000/docs
+200
+
+$ curl -s http://192.168.56.10:8000/health
+{"status":"ok","banco":"ok"}
+
+# a porta do PostgreSQL (5432) fica fechada: o ufw não libera e o PostgreSQL só escuta em localhost
+$ curl -s --max-time 5 telnet://192.168.56.10:5432
+codigo de saida do curl: 28  (28 = tempo esgotado, a porta está bloqueada)

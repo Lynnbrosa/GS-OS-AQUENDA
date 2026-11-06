@@ -101,7 +101,7 @@ As APIs rodam como o usuário `aquenda`, com `NoNewPrivileges`, `ProtectSystem=f
   2026-11-06T15:30:02-03:00 usuario=lynn script=02-app.sh passo="Publicar a API C# (.NET 8)" resultado=ok publicada em /opt/aquenda/api (98M)
   ```
 
-- **auditd:** vigia `/opt/aquenda` (escrita e mudança de permissão), `/etc/aquenda` (até leitura dos segredos), as unidades systemd e o banco. Para consultar, `sudo ausearch -k aquenda_segredos -i`.
+- **auditd:** vigia `/opt/aquenda` (escrita e mudança de permissão), `/etc/aquenda` (até leitura dos segredos), as unidades systemd e o banco. Para consultar, `sudo ausearch -k aquenda_segredos --format text` e `sudo aureport -k --summary`. Num script ou por SSH sem terminal, acrescente `--input-logs`: sem ele, o `ausearch` lê a entrada padrão em vez do log.
 
 ## Teste de falha
 
@@ -112,7 +112,7 @@ sudo ./scripts/04-teste-falha.sh
 | Teste | O que acontece |
 |---|---|
 | `kill -9` na API C# | o systemd sobe um processo novo em cerca de 5 s (`RestartSec=5`) e a API volta a responder |
-| `stress --cpu` por 60 s | o monitor grava `nivel=ALERTA recurso=cpu` e, quando acaba, `NORMALIZADO` |
+| `stress` em todas as CPUs por 90 s | o monitor grava `nivel=ALERTA recurso=cpu` e, quando acaba, `NORMALIZADO` |
 | `systemctl stop postgresql` | a FastAPI responde `503 {"title":"Banco indisponível"}` no `/health`, um erro claro, e a API C# segue no ar. Em até um minuto, o `aquenda-saude.timer` religa o PostgreSQL e o `/health` volta a 200 |
 
 Os três também rodam separados: `04-teste-falha.sh kill`, `cpu` ou `banco`.
@@ -138,7 +138,30 @@ Os scripts foram testados num container Ubuntu 24.04 com systemd como PID 1, que
 ./teste/rodar-no-docker.sh --apagar
 ```
 
-### Resultado (06/11/2026, Ubuntu 24.04 no container de teste)
+### Resultado na VM (06/11/2026, VirtualBox, Ubuntu Server 24.04.5)
+
+VM limpa, criada da imagem oficial do Ubuntu (`noble-server-cloudimg-amd64.ova`, SHA-256 conferido): 2 vCPU, 4 GB, placa 1 em NAT e placa 2 em host-only. O repositório foi clonado do GitHub dentro dela, e o `sudo ./provisionar.sh` rodou como o grupo vai rodar.
+
+| O quê | Resultado |
+|---|---|
+| `provisionar.sh` do zero | **4 min 4 s**, as 3 etapas sem erro |
+| Hostname | `ubuntu-limpa` → **`aquenda-srv`** (`hostnamectl`) |
+| IP fixo | **`192.168.56.10/24` em `enp0s8`** pelo netplan; `enp0s3` segue no DHCP (10.0.2.15) |
+| DNS | systemd-resolved com 1.1.1.1 e 8.8.8.8; `github.com` resolve |
+| Firewall | ufw ativo, entrada só em 22, 5000 e 8000 |
+| Acesso de fora | **do Windows**, `curl http://192.168.56.10:5000/api/servicos` devolve os 10 serviços e `http://192.168.56.10:8000/docs` dá 200; a porta 5432 não passa |
+| `kill -9` na API C# | processo novo em **5,1 s**; API respondendo em **7,3 s** |
+| `stress` de CPU | `ALERTA recurso=cpu uso=100%` em **33 s** e `NORMALIZADO` no fim |
+| PostgreSQL parado | `/health`: `503 {"title":"Banco indisponível"}`; a API C# seguiu no ar; o timer religou o banco em **12 s** |
+| auditd | 6 regras ativas. `aureport -k` registrou 57 eventos em `aquenda_app`, 39 em `aquenda_servicos`, 9 em `aquenda_segredos` e 8 em `aquenda_dados`. Exemplo: *"lynn, acting as root, successfully opened-file /etc/aquenda/api.env using /usr/bin/cat"* |
+
+Dois ajustes saíram deste teste:
+- **Prioridade do monitor.** Com `Nice=5` e só 2 vCPUs, o `stress` deixou o monitor 1,5 min sem medir. Agora ele roda com `Nice=-10` e `CPUWeight=1000`, porque o monitor precisa medir justamente quando a CPU está cheia.
+- **Servidores de build do .NET.** O `dotnet publish` deixava os servidores de build vivos, com uns 300 MB de RAM. Agora o script os desliga depois de publicar.
+
+A VM rodou no VirtualBox sobre o Hyper-V do Windows (modo NEM), que é mais lento sob carga: com a CPU cheia, um `sleep 2` chegou a levar 8,8 s dentro da VM. Por isso o alerta levou 33 s na VM e 5 s no container, e o teste de CPU tem margem de 150 s.
+
+### Resultado no container de teste (Ubuntu 24.04 com systemd)
 
 | O quê | Resultado |
 |---|---|
@@ -150,7 +173,7 @@ Os scripts foram testados num container Ubuntu 24.04 com systemd como PID 1, que
 | PostgreSQL parado | `/health` da FastAPI: `503 {"title":"Banco indisponível"}`. A API C# seguiu respondendo 200. O timer religou o banco em **34 s** |
 | Auditoria | 67 linhas no `audit.log`, uma por passo de cada script, mais o religamento do banco feito pelo timer |
 
-O container não tem kernel nem placa de rede próprios. Por isso o IP fixo (netplan), o `hostnamectl` e o auditd só rodam de verdade na VM. Neste teste, os scripts avisaram e seguiram, e as regras do auditd foram copiadas. Na gravação do vídeo, na VM, essas três partes aparecem funcionando.
+O container não tem kernel nem placa de rede próprios. Por isso o IP fixo (netplan), o `hostnamectl` e o auditd ficaram para a VM, onde funcionaram (veja acima). No container, os scripts avisaram e seguiram.
 
 ## Evidências
 
@@ -158,7 +181,13 @@ Em `docs/evidencias/`:
 
 | Arquivo | O que mostra |
 |---|---|
-| `01-provisionamento.txt` | o `provisionar.sh` do começo ao fim, com cada passo e as duas APIs respondendo |
+| `vm/01-provisionamento-vm.txt` | **na VM:** o clone do GitHub e o `provisionar.sh` do começo ao fim |
+| `vm/02-acesso-pelo-host.txt` | o Windows acessando as duas APIs pelo IP fixo, e a 5432 fechada |
+| `vm/03-teste-falha-vm.txt` e `vm/03b-teste-cpu-com-prioridade.txt` | os testes de falha na VM |
+| `vm/04-estado-da-vm.txt` | `hostnamectl`, `ip addr`, netplan, DNS, ufw, serviços, timers e journal do monitor |
+| `vm/05-audit.log`, `vm/06-monitor.log` | os logs de auditoria e do monitor da VM |
+| `vm/07-auditd.txt` | o auditd registrando quem leu os segredos e quem mexeu no código publicado |
+| `01-provisionamento.txt` | no container: o `provisionar.sh` do começo ao fim |
 | `02-teste-falha.txt` | os três testes de falha com os tempos |
 | `03-audit.log` | o log de auditoria gerado |
 | `04-monitor.log` | o log do monitor com o alerta de CPU |
@@ -170,9 +199,9 @@ Em `docs/evidencias/`:
 2. **0:30** `config/aquenda.conf` e os scripts. Rodar `sudo ./provisionar.sh` numa VM limpa e acelerar a gravação nos downloads.
 3. **2:30** O resultado: `hostnamectl`, `ip -brief addr`, `sudo ufw status`, `systemctl list-units 'aquenda-*'`, `curl localhost:5000/api/servicos` e `curl localhost:8000/docs`.
 4. **3:30** Teste 1: `sudo kill -9 $(pgrep -f Aquenda.Api)` e `watch systemctl status aquenda-api`, mostrando o PID novo em 5 s.
-5. **4:30** Teste 2: `stress --cpu 4 --timeout 60` com `tail -f /var/log/aquenda/monitor.log` ao lado, mostrando o ALERTA e depois o NORMALIZADO.
+5. **4:30** Teste 2: `stress --cpu 2 --timeout 90` com `tail -f /var/log/aquenda/monitor.log` ao lado, mostrando o ALERTA e depois o NORMALIZADO.
 6. **5:30** Teste 3: `sudo systemctl stop postgresql`, `curl localhost:8000/health` dando 503 com mensagem clara, e o timer religando o banco.
-7. **6:30** A auditoria: `tail /var/log/aquenda/audit.log` e `sudo ausearch -k aquenda_segredos -i`.
+7. **6:30** A auditoria: `tail /var/log/aquenda/audit.log`, `sudo cat /etc/aquenda/api.env` e `sudo ausearch -k aquenda_segredos --format text`, mostrando quem leu os segredos.
 
 ## Estrutura
 

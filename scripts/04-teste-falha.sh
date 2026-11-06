@@ -34,19 +34,20 @@ teste_kill() {
 }
 
 teste_cpu() {
-  passo "Teste 2: stress --cpu 4 --timeout 60, o monitor alerta"
+  passo "Teste 2: stress em todas as CPUs por 90 s, o monitor alerta"
   local marca linhas
   marca=$(wc -l <"$MONITOR_LOG")
-  registrar "$(agora) teste=cpu comando=\"stress --cpu 4 --timeout 60\" limite=${LIMITE_CPU}%"
-  stress --cpu "$(nproc)" --timeout 60 >/dev/null 2>&1 &
+  registrar "$(agora) teste=cpu comando=\"stress --cpu $(nproc) --timeout 90\" limite=${LIMITE_CPU}%"
+  stress --cpu "$(nproc)" --timeout 90 >/dev/null 2>&1 &
   local pid=$!
   local inicio=$SECONDS achou=""
-  while (( SECONDS - inicio < 70 )); do
+  # margem larga: numa VM lenta (VirtualBox sobre Hyper-V) a CPU cheia atrasa até o relógio da VM
+  while (( SECONDS - inicio < 150 )); do
     if tail -n +"$((marca + 1))" "$MONITOR_LOG" | grep -q 'nivel=ALERTA recurso=cpu'; then achou=$((SECONDS - inicio)); break; fi
     sleep 1
   done
   wait "$pid" || true
-  [[ -n "$achou" ]] || { aviso "nenhum alerta de CPU em 70 s"; return 1; }
+  [[ -n "$achou" ]] || { aviso "nenhum alerta de CPU em 150 s"; return 1; }
   sleep $((INTERVALO_MONITOR + 2))
   linhas=$(tail -n +"$((marca + 1))" "$MONITOR_LOG" | grep -E 'recurso=cpu' | sed -n '1p;$p')
   registrar "$(agora) teste=cpu primeiro_alerta_em=${achou}s"

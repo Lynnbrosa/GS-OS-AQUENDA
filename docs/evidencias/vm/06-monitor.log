@@ -1,0 +1,20 @@
+2026-11-06T16:03:41-03:00 nivel=INICIO monitor ligado pid=10525 limites cpu=80% memoria=85% disco=90%
+2026-11-06T16:03:42-03:00 nivel=ALERTA recurso=cpu uso=82% limite=80%
+2026-11-06T16:03:42-03:00 nivel=OK cpu=82% memoria=27% disco=39% carga=1.74,1.12,0.57
+2026-11-06T16:03:57-03:00 nivel=NORMALIZADO recurso=cpu uso=0% limite=80%
+2026-11-06T16:05:32-03:00 nivel=ALERTA recurso=cpu uso=100% limite=80%
+2026-11-06T16:05:34-03:00 nivel=OK cpu=100% memoria=26% disco=39% carga=14.35,4.50,1.78
+2026-11-06T16:05:49-03:00 nivel=NORMALIZADO recurso=cpu uso=1% limite=80%
+2026-11-06T16:06:02-03:00 nivel=ALERTA servico=postgresql estado=parado acao=religado
+2026-11-06T16:06:28-03:00 nivel=INICIO monitor ligado pid=11834 limites cpu=80% memoria=85% disco=90%
+2026-11-06T16:06:29-03:00 nivel=OK cpu=25% memoria=25% disco=39% carga=6.54,3.92,1.73
+2026-11-06T16:10:13-03:00 nivel=OK cpu=2% memoria=25% disco=39% carga=8.03,7.62,3.79
+2026-11-06T16:11:13-03:00 nivel=OK cpu=1% memoria=25% disco=39% carga=2.95,6.23,3.55
+2026-11-06T16:11:28-03:00 nivel=ALERTA recurso=cpu uso=100% limite=80%
+2026-11-06T16:14:49-03:00 nivel=INICIO monitor ligado pid=13103 limites cpu=80% memoria=85% disco=90%
+2026-11-06T16:14:50-03:00 nivel=OK cpu=19% memoria=18% disco=39% carga=2.18,4.07,3.22
+2026-11-06T16:15:24-03:00 nivel=ALERTA recurso=cpu uso=100% limite=80%
+2026-11-06T16:15:54-03:00 nivel=ALERTA recurso=cpu uso=100% limite=80%
+2026-11-06T16:16:24-03:00 nivel=ALERTA recurso=cpu uso=100% limite=80%
+2026-11-06T16:16:39-03:00 nivel=NORMALIZADO recurso=cpu uso=1% limite=80%
+2026-11-06T16:16:39-03:00 nivel=OK cpu=1% memoria=19% disco=39% carga=4.32,4.73,3.58

@@ -1,0 +1,28 @@
+# auditd: quem leu os segredos e quem mexeu no código publicado
+$ sudo cat /etc/aquenda/api.env > /dev/null
+$ sudo ausearch --input-logs -k aquenda_segredos --format text | tail -4
+At 16:14:54 11/06/26 lynn, acting as root, successfully add_rule aquenda_segredos using /usr/sbin/auditctl
+At 16:17:01 11/06/26 lynn, acting as root, successfully opened-file /etc/aquenda/api.env using /usr/bin/cat
+At 16:17:10 11/06/26 lynn, acting as root, successfully opened-file /etc/aquenda/api.env using /usr/bin/cat
+At 16:17:22 11/06/26 lynn, acting as root, successfully opened-file /etc/aquenda/api.env using /usr/bin/cat
+
+$ sudo ausearch --input-logs -k aquenda_app --format text | tail -4
+At 16:14:48 11/06/26 lynn, acting as root, successfully changed-file-attributes-of /home/lynn/GS-OS-AQUENDA/(null) using /usr/bin/install
+At 16:14:48 11/06/26 lynn, acting as root, successfully changed-file-permissions-of /opt/aquenda/config/aquenda.conf to 0644 using /usr/bin/install
+At 16:14:54 11/06/26 lynn, acting as root, successfully remove_rule aquenda_app using /usr/sbin/auditctl
+At 16:14:54 11/06/26 lynn, acting as root, successfully add_rule aquenda_app using /usr/sbin/auditctl
+
+$ sudo ausearch --input-logs -k aquenda_dados --format text | tail -2
+At 16:14:54 11/06/26 lynn, acting as root, successfully remove_rule aquenda_dados using /usr/sbin/auditctl
+At 16:14:54 11/06/26 lynn, acting as root, successfully add_rule aquenda_dados using /usr/sbin/auditctl
+
+$ sudo aureport --input-logs -k --summary
+
+Key Summary Report
+===========================
+total  key
+===========================
+57  aquenda_app
+39  aquenda_servicos
+9  aquenda_segredos
+8  aquenda_dados

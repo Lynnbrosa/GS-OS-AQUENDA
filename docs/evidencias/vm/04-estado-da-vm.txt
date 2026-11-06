@@ -1,0 +1,94 @@
+$ hostnamectl
+ Static hostname: aquenda-srv
+       Icon name: computer-vm
+         Chassis: vm 🖴
+      Machine ID: bbcfaed746d649af9bade3e001ae4fec
+         Boot ID: 305c09d5a3ee4a93812f8371c517d520
+  Virtualization: oracle
+Operating System: Ubuntu 24.04.5 LTS
+          Kernel: Linux 6.8.0-147-generic
+    Architecture: x86-64
+
+$ ip -4 -brief addr
+lo               UNKNOWN        127.0.0.1/8 
+enp0s3           UP             10.0.2.15/24 metric 100 
+enp0s8           UP             192.168.56.10/24 
+
+$ sudo cat /etc/netplan/60-aquenda.yaml
+# Gerado por 01-infra.sh (Aquenda). A placa NAT segue no DHCP para a saída à internet.
+network:
+  version: 2
+  ethernets:
+    enp0s8:
+      dhcp4: false
+      addresses: [192.168.56.10/24]
+      nameservers:
+        addresses: [1.1.1.1, 8.8.8.8]
+
+$ resolvectl dns
+Global: 1.1.1.1 8.8.8.8
+Link 2 (enp0s3): 192.168.15.1
+Link 3 (enp0s8): 1.1.1.1 8.8.8.8
+
+$ sudo ufw status verbose
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere                  
+5000/tcp                   ALLOW IN    Anywhere                  
+8000/tcp                   ALLOW IN    Anywhere                  
+22/tcp (v6)                ALLOW IN    Anywhere (v6)             
+5000/tcp (v6)              ALLOW IN    Anywhere (v6)             
+8000/tcp (v6)              ALLOW IN    Anywhere (v6)             
+
+
+$ systemctl list-units "aquenda-*" postgresql.service
+  UNIT                    LOAD   ACTIVE SUB     DESCRIPTION
+  aquenda-api.service     loaded active running Aquenda API C# (.NET 8, porta 5000)
+  aquenda-jobs.service    loaded active running Aquenda Jobs FastAPI (porta 8000)
+  aquenda-monitor.service loaded active running Aquenda monitor de CPU, memória e disco
+  postgresql.service      loaded active exited  PostgreSQL RDBMS
+  aquenda-jobs-sync.timer loaded active waiting Aquenda Jobs sincronização de hora em hora
+  aquenda-saude.timer     loaded active waiting Aquenda verificação de saúde a cada minuto
+
+
+$ systemctl list-timers "aquenda-*"
+NEXT                         LEFT LAST                           PASSED UNIT                    ACTIVATES
+Fri 2026-11-06 16:17:59 -03   58s Fri 2026-11-06 16:16:59 -03    1s ago aquenda-saude.timer     aquenda-saude.service
+Fri 2026-11-06 17:03:41 -03 46min Fri 2026-11-06 16:03:41 -03 13min ago aquenda-jobs-sync.timer aquenda-jobs-sync.service
+
+
+$ systemctl show aquenda-api -p Restart -p RestartUSec -p NRestarts -p User
+Restart=always
+RestartUSec=5s
+NRestarts=1
+User=aquenda
+
+$ systemctl show aquenda-monitor -p Restart -p Nice -p CPUWeight
+Restart=always
+CPUWeight=1000
+Nice=-10
+
+$ sudo auditctl -l
+-w /opt/aquenda -p wa -k aquenda_app
+-w /etc/aquenda -p rwa -k aquenda_segredos
+-w /etc/systemd/system/aquenda-api.service -p wa -k aquenda_servicos
+-w /etc/systemd/system/aquenda-jobs.service -p wa -k aquenda_servicos
+-w /etc/systemd/system/aquenda-monitor.service -p wa -k aquenda_servicos
+-w /var/lib/aquenda -p wa -k aquenda_dados
+
+(auditd: ver 07-auditd.txt)
+
+$ journalctl -t aquenda-monitor | tail
+Hint: You are currently not seeing messages from other users and the system.
+      Users in groups 'adm', 'systemd-journal' can see all messages.
+      Pass -q to turn off this notice.
+-- No entries --
+
+$ free -h
+               total        used        free      shared  buff/cache   available
+Mem:           3.8Gi       745Mi       1.1Gi        87Mi       2.3Gi       3.1Gi

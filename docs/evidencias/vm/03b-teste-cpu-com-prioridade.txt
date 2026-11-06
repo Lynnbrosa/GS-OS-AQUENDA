@@ -1,0 +1,12 @@
+monitor: Nice=-10 CPUWeight=1000
+
+==> Teste 2: stress em todas as CPUs por 90 s, o monitor alerta
+2026-11-06T16:14:55-03:00 teste=cpu comando="stress --cpu 2 --timeout 90" limite=80%
+2026-11-06T16:16:42-03:00 teste=cpu primeiro_alerta_em=33s
+2026-11-06T16:15:24-03:00 nivel=ALERTA recurso=cpu uso=100% limite=80%
+2026-11-06T16:16:39-03:00 nivel=NORMALIZADO recurso=cpu uso=1% limite=80%
+    ok alerta de CPU em 33 s; quando o stress acaba, o monitor registra NORMALIZADO
+
+==> Fim dos testes de falha
+    ok relatório em /var/log/aquenda/teste-falha.log
+saida=0

@@ -100,7 +100,9 @@ ok "$ENV_API e $ENV_JOBS (root:$USUARIO_APP, 640)"
 
 passo "Publicar a API C# (.NET 8)"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 DOTNET_CLI_HOME=/tmp/dotnet-home
-dotnet publish "$FONTES/api/src/Aquenda.Api" -c Release -o "$DIR_API.novo" --nologo -v quiet
+dotnet publish "$FONTES/api/src/Aquenda.Api" -c Release -o "$DIR_API.novo" --nologo -v quiet -nodeReuse:false -p:UseSharedCompilation=false
+# o build deixa servidores do MSBuild e do compilador vivos, com uns 300 MB de RAM: num servidor, desliga
+dotnet build-server shutdown >/dev/null 2>&1 || true
 rm -rf "$DIR_API.antigo"; [[ -d "$DIR_API" ]] && mv "$DIR_API" "$DIR_API.antigo"
 mv "$DIR_API.novo" "$DIR_API"
 chown -R "$USUARIO_APP":"$USUARIO_APP" "$DIR_API"
