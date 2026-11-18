@@ -10,7 +10,7 @@ Uma VM Linux que se provisiona sozinha por Shell Script. Ela sobe a **API C#** (
 | Gustavo Oliveira de Moura | 555827 |
 | Lynn Bueno Rosa | 551102 |
 
-**Vídeo (até 7 min):** _link a adicionar_
+**Vídeo (até 7 min):** https://youtu.be/vnnUgTd3iUU
 
 Aplicações hospedadas: [GS-c--AQUENDA](https://github.com/Lynnbrosa/GS-c--AQUENDA) (API C#, porta 5000) e [GS-SOA-AQUENDA](https://github.com/Lynnbrosa/GS-SOA-AQUENDA) (FastAPI, porta 8000).
 
@@ -192,16 +192,6 @@ Em `docs/evidencias/`:
 | `03-audit.log` | o log de auditoria gerado |
 | `04-monitor.log` | o log do monitor com o alerta de CPU |
 | `05-servicos.txt` | `systemctl status` dos serviços e timers |
-
-## Roteiro do vídeo (até 7 min)
-
-1. **0:00** O que é: a VM que hospeda o Aquenda. O app depende das duas APIs no ar.
-2. **0:30** `config/aquenda.conf` e os scripts. Rodar `sudo ./provisionar.sh` numa VM limpa e acelerar a gravação nos downloads.
-3. **2:30** O resultado: `hostnamectl`, `ip -brief addr`, `sudo ufw status`, `systemctl list-units 'aquenda-*'`, `curl localhost:5000/api/servicos` e `curl localhost:8000/docs`.
-4. **3:30** Teste 1: `sudo kill -9 $(pgrep -f Aquenda.Api)` e `watch systemctl status aquenda-api`, mostrando o PID novo em 5 s.
-5. **4:30** Teste 2: `stress --cpu 2 --timeout 90` com `tail -f /var/log/aquenda/monitor.log` ao lado, mostrando o ALERTA e depois o NORMALIZADO.
-6. **5:30** Teste 3: `sudo systemctl stop postgresql`, `curl localhost:8000/health` dando 503 com mensagem clara, e o timer religando o banco.
-7. **6:30** A auditoria: `tail /var/log/aquenda/audit.log`, `sudo cat /etc/aquenda/api.env` e `sudo ausearch -k aquenda_segredos --format text`, mostrando quem leu os segredos.
 
 ## Estrutura
 
